@@ -4,7 +4,7 @@ from linear_formula import LinearFormula
 
 class TestLinearFormula(unittest.TestCase):
 
-    def test_init(self):
+    def test_init_with_string(self):
 
         test_data = [
             #init string            expected        expected
@@ -13,7 +13,7 @@ class TestLinearFormula(unittest.TestCase):
             ('a+3b-4c+3a',          [1, 3, -4, 3],  ['a', 'b', 'c', 'a']),
             (' a  +7b-  0c -4d ',   [1, 7, 0, -4],  ['a', 'b', 'c', 'd']),
             ('-a + 4c + 3b - 4c',   [-1, 4, 3, -4], ['a', 'c', 'b', 'c']),
-            #('',                    [],             ['']                ),
+            ('',                    [],             []                  ),
             ('a',                   [1],            ['a']               ),
             ('6',                   [6],            ['']                ),
             ('ab + 3cd - 34ef',     [1, 3, -34],    ['ab', 'cd', 'ef']  ),
@@ -23,6 +23,46 @@ class TestLinearFormula(unittest.TestCase):
             formula = LinearFormula(test_data[i][0])
             self.assertEqual(formula.multipliers, test_data[i][1])
             self.assertEqual(formula.variables, test_data[i][2])
+
+    def test_init_with_dict(self):
+
+        test_data = [
+            #init dict
+            {'a': 1, 'b': 3, 'c': -4},
+        ]
+
+        for i in range(len(test_data)):
+            formula = LinearFormula(test_data[i])
+            self.assertEqual(formula.multipliers, list(test_data[i].values()))
+            self.assertEqual(formula.variables, list(test_data[i].keys()))
+
+    def test_init_with_int(self):
+
+        test_data = [3, '3', 0, 23, '23']
+
+        for i in range(len(test_data)):
+            formula = LinearFormula(test_data[i])
+            self.assertEqual(formula.multipliers, [int(test_data[i])])
+            self.assertEqual(formula.variables, [''])
+
+    def test_init_with_lists(self):
+
+        test_data = [
+            #init multipliers   init variables
+            ([1, 3, -4],        ['a', 'b', 'c']     ),
+            ([1, 3, -4, 3],     ['a', 'b', 'c', 'a']),
+            ([1, 7, 0, -4],     ['a', 'b', 'c', 'd']),
+            ([-1, 4, 3, -4],    ['a', 'c', 'b', 'c']),
+            ([],                []                  ),
+            ([1],               ['a']               ),
+            ([6],               ['']                ),
+            ([1, 3, -34],       ['ab', 'cd', 'ef']  ),
+        ]
+
+        for i in range(len(test_data)):
+            formula = LinearFormula(test_data[i][0], test_data[i][1])
+            self.assertEqual(formula.multipliers, test_data[i][0])
+            self.assertEqual(formula.variables, test_data[i][1])
         
     def test_inspace(self):
         #formula = LinearFormula('a + 3b - 4c + 3a')
@@ -58,20 +98,20 @@ class TestLinearFormula(unittest.TestCase):
     def test_str(self):
 
         test_data = [
-            #init string            expected string
-            ('a + 3b - 4c',         'a + 3b - 4c'       ),
-            ('a+3b-4c+3a',          'a + 3b - 4c + 3a'  ),
-            (' a  +7b-  0c -4d ',   'a + 7b + 0c - 4d'  ),
-            ('-a + 4c + 3b - 4c',   '-a + 4c + 3b - 4c' ),
-            #('',                    '0'                 ),
-            ('a',                   'a'                 ),
-            ('6',                   '6'                 ),
-            ('ab + 3cd - 34ef',     'ab + 3cd - 34ef'   ),
+            #init multipliers   init variables          expected string
+            ([1, 3, -4],        ['a', 'b', 'c'],        'a + 3b - 4c'       ),
+            ([1, 3, -4, 3],     ['a', 'b', 'c', 'a'],   'a + 3b - 4c + 3a'  ),
+            ([1, 7, 0, -4],     ['a', 'b', 'c', 'd'],   'a + 7b + 0c - 4d'  ),
+            ([-1, 4, 3, -4],    ['a', 'c', 'b', 'c'],   '-a + 4c + 3b - 4c' ),
+            ([],                [],                     '0'                 ),
+            ([1],               ['a'],                  'a'                 ),
+            ([6],               [''],                   '6'                 ),
+            ([1, 3, -34],       ['ab', 'cd', 'ef'],     'ab + 3cd - 34ef'   ),
         ]
         
         for i in range(len(test_data)):
-            formula = LinearFormula(test_data[i][0])
-            self.assertEqual(str(formula), test_data[i][1])
+            formula = LinearFormula(test_data[i][0], test_data[i][1])
+            self.assertEqual(str(formula), test_data[i][2])
 
     def test_add_segment(self):
 
@@ -80,8 +120,8 @@ class TestLinearFormula(unittest.TestCase):
             #formula             variable
             ('a + 3b - 4c', (3,  'g'),   'a + 3b - 4c + 3g'  ),
             ('a + 3b - 4c', (-3, 'g'),   'a + 3b - 4c - 3g'  ),
-            #('',            (3,  'g')   '3g'                ),
-            #('',            (-3, 'g')   '-3g'               ),
+            ('',            (3,  'g'),   '3g'                ),
+            ('',            (-3, 'g'),   '-3g'               ),
         ]
 
         for i in range(len(test_data)):
@@ -102,7 +142,7 @@ class TestLinearFormula(unittest.TestCase):
             ('a + 3b - 4c',     (-5, 'g', 0),   '-5g + a + 3b - 4c' ),
             ('-a + 3b - 4c',    (5,  'g', 0),   '5g - a + 3b - 4c'  ),
             ('a + 3b - 4c',     (-5, 'g', 3),   'a + 3b - 4c - 5g'  ),
-            #('',                (3,  'g', 0),   '3g'                ),
+            ('',                (3,  'g', 0),   '3g'                ),
             #('',                (3,  'g', 1),   'err'               ),
         ]   
 
@@ -137,7 +177,7 @@ class TestLinearFormula(unittest.TestCase):
             ('a + 3b - 4c + 3a',        4),
             ('a + 7b - 0c - 4d + 1',    5),
             ('-a + 4c',                 2),
-            #('',                        0),
+            ('',                        0),
             ('a',                       1),
             ('6',                       1),
             ('ab + 3cd - 34ef',         3),
@@ -159,7 +199,7 @@ class TestLinearFormula(unittest.TestCase):
             ('a + 3b - 4c + 3a',    'a', 'x + 2', 'x + 2 + 3b - 4c + 3x + 6'),
             ('a + 7b - 4d',         'b', 'x + 2', 'a + 7x + 14 - 4d'        ),
             ('-a + 4c',             'c', 'x + 2', '-a + 4x + 8'             ),
-            #('',                    'a', 'x + 2', '0'                       ),
+            ('',                    'a', 'x + 2', '0'                       ),
             ('a',                   'a', 'x + 2', 'x + 2'                   ),
             ('6a + 3b',             'c', 'x + 2', '6a + 3b'                 ),
             ('a + 3b - 4c',         'a', 'aaa',   'aaa + 3b - 4c'           ),
@@ -179,7 +219,7 @@ class TestLinearFormula(unittest.TestCase):
             ('a + 3b - 4c + 3a',    '4a + 3b - 4c'      ),
             ('a + 7b - 0c - 4d',    'a + 7b - 4d'       ),
             ('-a + 4c + 3b - 4c',   '-a + 3b'           ),
-            #('',                    '0'                 ),
+            ('',                    '0'                 ),
             ('a',                   'a'                 ),
             ('6',                   '6'                 ),
             ('ab + 3cd - 34ef',     'ab + 3cd - 34ef'   ),
@@ -219,7 +259,6 @@ class TestLinearFormula(unittest.TestCase):
             ('a + 3b - 4c + 3a',    3,  'a + 2c'        ),
             ('a + 7b - 0c - 4d',    3,  'a + b + 2d'    ),
             ('-a + 4c + 3b - 4c',   5,  '4a + 3b'       ),
-            #('',                     ,                  ),
             ('a',                   4,  'a'             ),
             ('6',                   4,  '2'             ),
             ('ab + 3cd - 34ef',     10, 'ab + 3cd + 6ef'),

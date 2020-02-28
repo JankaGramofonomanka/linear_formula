@@ -6,66 +6,181 @@ def type_of(char):
         if char == ' ':
             return 'space'
         elif char in {'+', '-'}:
-            return 'sign'
+            return 'operator'
         else:
             return 'char'
 
 class LinearFormula():
 
-    def __init__(self, string):
+
+    #-INIT--------------------------------------------------------------------
+
+    def __init__(self, *args):
         
         self.multipliers = []
         self.variables = []
-        # for example if <string> == 'a + 4b - 3c' then we should get
-        #      <self.multipliers> == [1,   4,   -3 ]
-        #        <self.variables> == ['a', 'b', 'c']
+        # for example if the formula is 'a + 4b - 3c' then we should get
+        #         <self.multipliers> == [1,   4,   -3 ]
+        #           <self.variables> == ['a', 'b', 'c']
 
-        # temporary data
-        self.current_multiplier = None;
-        self.current_variable = ''
-        self.sign = 1
+        if len(args) == 1:
+            arg = args[0]
+            if type(arg) == str:
+                self.read_from_string(arg)
+
+            elif type(arg) == dict:
+                for variable, multiplier in arg.items():
+                    self.variables.append(variable)
+                    self.multipliers.append(int(multiplier))
+            else:
+                try:
+                    self.multipliers.append(int(arg))
+                    self.variables.append('')
+                except ValueError:
+                    raise ValueError('invalid argument')
+
+
+        elif len(args) == 2 and type(args[0]) == type(args[1]) == list:
+            if len(args[0]) != len(args[1]):
+                raise ValueError("""lists of multipliers and variables must 
+                    have the same length""")
+            else:
+                self.multipliers = args[0].copy()
+                self.variables = args[1].copy()
+
+    #-------------------------------------------------------------------------
+
+
+    #-STRING-TO-FORMULA-CONVERSION--------------------------------------------
+
+    def read_from_string(self, string):
+        """Converts a string into a formula"""
+        # I assume that <string> is made of substrings like this:
+        # operator, multiplier, variable, operator, multiplier, variable, ...
+        # where some of the substrings can be empty
         
-        #### True if the algorithm has finished processing the current 
-        #### multiplier / variable
-        self.processed_mult = False
-        self.processed_var = False
+        # the algorithm in essence works like this:
+        # 1. read operator
+        # 2. read multilpier
+        # 3. read variable
+        # 4. add segment
+        # 5. go back to point 1. if the string hasn't ended
 
-        #### the type of last substring type ('number' or 'char' or 'other')
-        self.last_substr_type = 'other'
+        #set up temporary data
+        self._setup_read_from_string()
 
-        #process
-        for char in string.strip():
-            self._check(char)
-            if self._ready():
-                # add the current multiplier and variable if the algorith has 
-                # finished processing them
-                self.add_segment(
-                    self.current_multiplier, self.current_variable, 
-                    inplace=True
-                    )
-                # reset the temporary data except <self.last_substr_type>
-                self._reset()
+        for char in string:
+            self._process(char)
+
+        # this will add the last segment
+        self._process(' ')
+
+        self._tear_down_read_from_string()
+
+    def _setup_read_from_string(self):
+        """Sets up memory for the <read_from_string> function"""
+        self._current_operation = None
+        self._current_multiplier = None
+        self._current_variable = None
+        self._phase = 'operation'
+
+    def _tear_down_read_from_string(self):
+        """Deletes memory used by the <read_from_string> function"""
+        del self._current_operation
+        del self._current_multiplier
+        del self._current_variable
+        del self._phase
+
+    def _process(self, char):
+        if self._phase == 'operation':
+            self._process_operation(char)
+        elif self._phase == 'multiplier':
+            self._process_multiplier(char)
+        elif self._phase == 'variable':
+            self._process_variable(char)
+
+
+    # the 3 methods below:
+    # <_process_operation>, <_process_multiplier>, <_process_variable> 
+    # work like this:
+    # if <char> is "supported":
+    #     do stuff
+    # else:
+    #     clean up
+    #     go to the next phase 
+    #     pass <char> to the next _process_whatever method
+
+    def _process_operation(self, char):
             
+        if char == ' ':
+            # in the middle of a string a space does not tell us anything
+            # also this prevents from going in circles when a space occurs 
+            # after a variable name
+            pass
 
-            if type_of(char) == 'number':
-                self._process_number(char)
+        elif type_of(char) == 'operator':
+            if char == '+':
+                self._current_operation = '+'
+            elif char == '-':
+                self._current_operation = '-'
+            else:
+                raise ValueError(f'invalid operation - {char}')
 
-            elif type_of(char) == 'char':
-                self._process_character(char)
+        else:
+            # clean up
+            if self._current_operation is None:
+                self._current_operation = '+'
+            
+            # next phase
+            self._phase = 'multiplier'
+            self._process_multiplier(char)
 
-            elif type_of(char) == 'sign':
-                self._process_sign(char)
+    def _process_multiplier(self, char):
 
-            elif type_of(char) == 'space':
-                self.last_substr_type = 'other'
+        if type_of(char) == 'number':
+            if self._current_multiplier is None:
+                self._current_multiplier = int(char)
+            else:
+                self._current_multiplier *= 10
+                self._current_multiplier += int(char)
 
-        #add what remained
-        self._check('end')
-        self.add_segment(
-            self.current_multiplier, self.current_variable, 
-            inplace=True
-            )
-        self._reset()
+        else:
+            # clean up
+            if self._current_multiplier is None:
+                self._current_multiplier = 1
+
+            if self._current_operation == '-':
+                self._current_multiplier *= -1
+
+            # next phase
+            self._phase = 'variable'
+            self._process_variable(char)
+
+    def _process_variable(self, char):
+    
+        if type_of(char) == 'char':
+            if self._current_variable is None:
+                self._current_variable = char
+            else:
+                self._current_variable += char
+
+        else:
+            # clean up
+            if self._current_variable is None:
+                self._current_variable = ''
+
+            # add segment (part of clean up)
+            self.multipliers.append(self._current_multiplier)
+            self.variables.append(self._current_variable)
+
+            # reset temporary data and go to the next phase
+            self._setup_read_from_string()
+            self._process_operation(char)
+
+    #-------------------------------------------------------------------------
+
+
+    #-OPERATOR-OVERLOADS------------------------------------------------------
 
     def __str__(self):
 
@@ -94,55 +209,28 @@ class LinearFormula():
     def __eq__(self, other):
         return (
             self.multipliers == other.multipliers 
-            and self.variables == other.variables)
+            and self.variables == other.variables
+        )
 
-    def _process_number(self, char):
-        if self.current_multiplier is None:
-            self.current_multiplier = 0
+    #-------------------------------------------------------------------------
 
-        self.current_multiplier *= 10
-        self.current_multiplier += int(char)
-        self.last_substr_type = 'number'
 
-    def _process_character(self, char):
-        if self.current_multiplier is None:
-            self.current_multiplier = 1
+    #-SIMPLE-METHODS----------------------------------------------------------
 
-        self.current_variable += char
-        self.last_substr_type = 'char'
+    def length(self):
+        return len(self.multipliers)
 
-    def _process_sign(self, char):
-        if char == '-':
-            self.sign = -1;
-        elif char == '+':
-            self.sign = 1
-        self.last_substr_type = 'other'
+    def print(self):
+        print(self.__str__())
 
-    def _ready(self):
-        return self.processed_mult and self.processed_var
+    def copy(self):
+        copy_of_self = LinearFormula(self.__str__())
+        return copy_of_self
 
-    def _check(self, char):
-        """Checks if temporary data should be modified"""
-    
-        if self.last_substr_type == 'number' and type_of(char) == 'char':
-            self.processed_mult = True
+    #-------------------------------------------------------------------------
 
-        if char == 'end' or (self.last_substr_type != 'other' 
-            and type_of(char) in {'space', 'sign'}):
 
-            self.current_multiplier *= self.sign
-            self.processed_var = True
-            self.processed_mult = True
-
-    def _reset(self):
-        """resets all temporay data except <self.last_substr_type>"""
-
-        self.sign = 1
-        self.processed_mult = False
-        self.processed_var = False
-        self.current_multiplier = None
-        self.current_variable = ''
-
+    #-MODIFICATION------------------------------------------------------------
 
     def add_segment(self, multiplier, variable, inplace=False):
         if inplace:
@@ -171,14 +259,6 @@ class LinearFormula():
         del self.variables[index]
 
         return (multiplier, variable)
-
-
-    def length(self):
-        return len(self.multipliers)
-
-    def print(self):
-        print(self.__str__())
-
 
     def substitute(self, variable, formula, inplace=False):
         """substitutes <variable> for <formula>"""
@@ -238,9 +318,19 @@ class LinearFormula():
             copy_of_self.zip(inplace=True)
             return copy_of_self
 
-    def copy(self):
-        copy_of_self = LinearFormula(self.__str__())
-        return copy_of_self
+    def modulo(self, n, inplace=False):
+        
+        if inplace:
+            self.zip(inplace=True)
+            for i in range(self.length()):
+                self.multipliers[i] %= n
+            self.zip(inplace=True)
+        else:
+            copy_of_self = self.copy()
+            copy_of_self.modulo(n, inplace=True)
+            return copy_of_self
+
+    #-------------------------------------------------------------------------
 
     def evaluate(self, values_dict):
         #"""
@@ -249,7 +339,7 @@ class LinearFormula():
         try:
             for i in range(self.length()):
                 result += self.multipliers[i]*values_dict[self.variables[i]]
-        except:
+        except KeyError:
             raise ValueError("Not all variables are provided")
         return result
         """
@@ -267,18 +357,6 @@ class LinearFormula():
         else:
             raise ValueError("Not all variables are provided")
         #"""
-
-    def modulo(self, n, inplace=False):
-        
-        if inplace:
-            self.zip(inplace=True)
-            for i in range(self.length()):
-                self.multipliers[i] %= n
-            self.zip(inplace=True)
-        else:
-            copy_of_self = self.copy()
-            copy_of_self.modulo(n, inplace=True)
-            return copy_of_self
 
 
 
