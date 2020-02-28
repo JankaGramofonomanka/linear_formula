@@ -68,31 +68,26 @@ class TestLinearFormula(unittest.TestCase):
         #formula = LinearFormula('a + 3b - 4c + 3a')
         #control_formula = LinearFormula('a + 3b - 4c + 3a')
 
-        functions = [
-            LinearFormula.add_segment, 
-            LinearFormula.insert_segment, 
-            LinearFormula.substitute, 
-            LinearFormula.zip, 
-            LinearFormula.modulo
+        test_data = [
+            (LinearFormula.add_segment,     [3, 'f']                        ),
+            (LinearFormula.insert_segment,  [3, 'f', 2]                     ),
+            (LinearFormula.remove_segment,  [3]                             ),
+            (LinearFormula.substitute,      ['b', LinearFormula('x + 3')]   ),
+            (LinearFormula.zip,             []                              ),
+            (LinearFormula.modulo,          [2]                             ),
         ]
 
-        argss = [
-            [3, 'f'],
-            [3, 'f', 2],
-            ['b', LinearFormula('x + 3')],
-            [],
-            [2]
-        ]
-
-        for i in range(len(functions)):
+        for i in range(len(test_data)):
             formula = LinearFormula('a + 3b - 4c + 3a')
             control_formula = LinearFormula('a + 3b - 4c + 3a')
             self.assertEqual(formula, control_formula)
             
-            functions[i](formula, *argss[i])
+            function = test_data[i][0]
+            args = test_data[i][1]
+            function(formula, *args)
             self.assertEqual(formula, control_formula)
 
-            functions[i](formula, *argss[i], inplace=True)
+            function(formula, *args, inplace=True)
             self.assertNotEqual(formula, control_formula)
 
     def test_str(self):
@@ -152,20 +147,33 @@ class TestLinearFormula(unittest.TestCase):
             formula.insert_segment(*test_data[i][1], inplace=True)
             self.assertEqual(str(formula), test_data[i][2])
 
-    def test_get_and_remove_segment(self):
+    def test_remove_segment(self):
 
         test_data = [
-            #initial formula    index           formula after removal
-            #                       expected segment
-            ('a + 3b - 4c',     1,  (3, 'b'),   'a - 4c'),
-            ('a + 3b - 4c',     2,  (-4, 'c'),  'a + 3b'),
+            #initial formula            formula after removal
+            #                   index
+            ('a + 3b - 4c',     1,      'a - 4c'),
+            ('a + 3b - 4c',     2,      'a + 3b'),
         ]
 
         for i in range(len(test_data)):
             formula = LinearFormula(test_data[i][0])
-            segment = formula.get_and_remove_segment(test_data[i][1])
+            formula.remove_segment(test_data[i][1], inplace=True)
+            self.assertEqual(str(formula), test_data[i][2])
+
+    def test_get_segment(self):
+
+        test_data = [
+            #initial formula            expected segment
+            #                   index
+            ('a + 3b - 4c',     1,      (3, 'b')    ),
+            ('a + 3b - 4c',     2,      (-4, 'c')   ),
+        ]
+
+        for i in range(len(test_data)):
+            formula = LinearFormula(test_data[i][0])
+            segment = formula.get_segment(test_data[i][1])
             self.assertEqual(segment, test_data[i][2])
-            self.assertEqual(str(formula), test_data[i][3])
 
     def test_length(self):
 

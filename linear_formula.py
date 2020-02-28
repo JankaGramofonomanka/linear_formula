@@ -215,21 +215,6 @@ class LinearFormula():
     #-------------------------------------------------------------------------
 
 
-    #-SIMPLE-METHODS----------------------------------------------------------
-
-    def length(self):
-        return len(self.multipliers)
-
-    def print(self):
-        print(self.__str__())
-
-    def copy(self):
-        copy_of_self = LinearFormula(self.__str__())
-        return copy_of_self
-
-    #-------------------------------------------------------------------------
-
-
     #-MODIFICATION------------------------------------------------------------
 
     def add_segment(self, multiplier, variable, inplace=False):
@@ -251,14 +236,15 @@ class LinearFormula():
                 multiplier, variable, index, inplace=True)
             return copy_of_self
 
-    def get_and_remove_segment(self, index):
-        multiplier = self.multipliers[index]
-        variable = self.variables[index]
+    def remove_segment(self, index, inplace=False):
+        if inplace:
+            del self.multipliers[index]
+            del self.variables[index]
 
-        del self.multipliers[index]
-        del self.variables[index]
-
-        return (multiplier, variable)
+        else:
+            copy_of_self = self.copy()
+            copy_of_self.remove_segment(index, inplace=True)
+            return copy_of_self
 
     def substitute(self, variable, formula, inplace=False):
         """substitutes <variable> for <formula>"""
@@ -271,7 +257,9 @@ class LinearFormula():
             while True:
                 try:
                     i = self.variables.index(variable)
-                    multiplier = self.get_and_remove_segment(i)[0]
+                    multiplier = self.get_segment(i)[0]
+                    self.remove_segment(i, inplace=True)
+
                     for j in range(formula.length()):
                         self.insert_segment(
                             multiplier*formula.multipliers[j],
@@ -295,14 +283,16 @@ class LinearFormula():
 
                 # find the first segment with <variable> and put it aside
                 i = self.variables.index(variable)
-                multiplier = self.get_and_remove_segment(i)[0]
+                multiplier = self.get_segment(i)[0]
+                self.remove_segment(i, inplace=True)
 
                 while True:
                     try:
                         # if more segments with <variable> exist, merge them 
                         # with the segment put aside
                         j = self.variables.index(variable)
-                        multiplier += self.get_and_remove_segment(j)[0]
+                        multiplier += self.get_segment(j)[0]
+                        self.remove_segment(j, inplace=True)
 
                     except ValueError:
                         # if no more segmrnts with <variable> exist, add the 
@@ -332,8 +322,26 @@ class LinearFormula():
 
     #-------------------------------------------------------------------------
 
+
+    #-RETURN-STUFF------------------------------------------------------------
+
+    def length(self):
+        return len(self.multipliers)
+
+    def print(self):
+        print(self.__str__())
+
+    def copy(self):
+        copy_of_self = LinearFormula(self.__str__())
+        return copy_of_self
+
+    def get_segment(self, index):
+        multiplier = self.multipliers[index]
+        variable = self.variables[index]
+
+        return (multiplier, variable)
+
     def evaluate(self, values_dict):
-        #"""
         result = 0
         values_dict[''] = 1
         try:
@@ -342,21 +350,11 @@ class LinearFormula():
         except KeyError:
             raise ValueError("Not all variables are provided")
         return result
-        """
-        temp_formula = self.copy()
 
-        for variable in values_dict.keys():
-            value_as_formula = LinearFormula(str(values_dict[variable]))
-            temp_formula.substitute(variable, value_as_formula, inplace=True)
+    #-------------------------------------------------------------------------
 
-        temp_formula.zip(inplace=True)
-        if temp_formula.variables == ['']:
-            return temp_formula.multipliers[0]
-        elif temp_formula.variables == []:
-            return 0
-        else:
-            raise ValueError("Not all variables are provided")
-        #"""
+
+
 
 
 
