@@ -1,14 +1,5 @@
-def type_of(char):
-    try:
-        int(char)
-        return 'number'
-    except ValueError:
-        if char == ' ':
-            return 'space'
-        elif char in {'+', '-'}:
-            return 'operator'
-        else:
-            return 'char'
+import misc
+
 
 class LinearFormula():
 
@@ -118,7 +109,7 @@ class LinearFormula():
             # after a variable name
             pass
 
-        elif type_of(char) == 'operator':
+        elif misc.type_of_char(char) == 'operator':
             if char == '+':
                 self._current_operation = '+'
             elif char == '-':
@@ -137,7 +128,7 @@ class LinearFormula():
 
     def _process_multiplier(self, char):
 
-        if type_of(char) == 'number':
+        if misc.type_of_char(char) == 'number':
             if self._current_multiplier is None:
                 self._current_multiplier = int(char)
             else:
@@ -158,7 +149,7 @@ class LinearFormula():
 
     def _process_variable(self, char):
     
-        if type_of(char) == 'char':
+        if misc.type_of_char(char) == 'char':
             if self._current_variable is None:
                 self._current_variable = char
             else:
@@ -189,21 +180,34 @@ class LinearFormula():
             
             if self.multipliers[i] >= 0:
                 if i != 0:
+                    # the '+' should be omitted at the beginning
                     text += ' + '
+
                 if self.multipliers[i] != 1 or self.variables[i] == '':
+                    # if the multiplier is 1 and there is a variable, there is
+                    # no sense in writing the multiplier
                     text += str(self.multipliers[i])
             else:
                 if i != 0:
                     text += ' - '
+
                 else:
+                    # at the beginning the '-' shouldn't have spaces around it
                     text += '-'
                 if self.multipliers[i] != -1 or self.variables[i] == '':
+                    # if the multiplier is -1 and there is a variable, there 
+                    # is no sense in writing the multiplier
+
+                    # the '-' was alredy written
                     text += str(-self.multipliers[i])
 
+            # dont't forget the variable
             text += self.variables[i]
 
+        # the string shouldn't be empty
         if text == '':
             text = '0'
+
         return text
 
     def __eq__(self, other):
@@ -217,109 +221,87 @@ class LinearFormula():
 
     #-MODIFICATION------------------------------------------------------------
 
-    def add_segment(self, multiplier, variable, inplace=False):
-        if inplace:
-            self.multipliers.append(multiplier)
-            self.variables.append(variable)
-        else:
-            copy_of_self = self.copy()
-            copy_of_self.add_segment(multiplier, variable, inplace=True)
-            return copy_of_self
+    @misc.inplace(default=False)
+    def add_segment(self, multiplier, variable):
+        self.multipliers.append(multiplier)
+        self.variables.append(variable)
 
-    def insert_segment(self, multiplier, variable, index, inplace=False):
-        if inplace:
-            self.multipliers.insert(index, multiplier)
-            self.variables.insert(index, variable)
-        else:
-            copy_of_self = self.copy()
-            copy_of_self.insert_segment(
-                multiplier, variable, index, inplace=True)
-            return copy_of_self
+    @misc.inplace(default=False)
+    def insert_segment(self, multiplier, variable, index):
+        self.multipliers.insert(index, multiplier)
+        self.variables.insert(index, variable)
 
-    def remove_segment(self, index, inplace=False):
-        if inplace:
-            del self.multipliers[index]
-            del self.variables[index]
+    @misc.inplace(default=False)
+    def remove_segment(self, index):
+        del self.multipliers[index]
+        del self.variables[index]
 
-        else:
-            copy_of_self = self.copy()
-            copy_of_self.remove_segment(index, inplace=True)
-            return copy_of_self
-
-    def substitute(self, variable, formula, inplace=False):
+    @misc.inplace(default=False)
+    def substitute(self, variable, formula):
         """substitutes <variable> for <formula>"""
         # for example if <self> "==" 'a + b', 
         #             <variable> == 'a', 
         #             <formula> "==" 'x + 2' 
         # then the result should be 'x + 2 + b'
 
-        if inplace:
-            while True:
-                try:
-                    i = self.variables.index(variable)
-                    multiplier = self.get_segment(i)[0]
-                    self.remove_segment(i, inplace=True)
-
-                    for j in range(formula.length()):
-                        self.insert_segment(
-                            multiplier*formula.multipliers[j],
-                            formula.variables[j],
-                            i + j,
-                            inplace=True
-                        )
-
-                except ValueError:
-                    break
-        else:
-            copy_of_self = self.copy()
-            copy_of_self.substitute(variable, formula, inplace=True)
-            return copy_of_self
-
-    def zip(self, inplace=False):
-        """Reduces the formula to the simplest form"""
-
-        if inplace:
-            for variable in set(self.variables):
-
+        while True:
+            try:
                 # find the first segment with <variable> and put it aside
                 i = self.variables.index(variable)
                 multiplier = self.get_segment(i)[0]
                 self.remove_segment(i, inplace=True)
 
-                while True:
-                    try:
-                        # if more segments with <variable> exist, merge them 
-                        # with the segment put aside
-                        j = self.variables.index(variable)
-                        multiplier += self.get_segment(j)[0]
-                        self.remove_segment(j, inplace=True)
+                # insert each segment from <formula> multiplied by 
+                # <multiplier> into <self>
+                for j in range(formula.length()):
+                    self.insert_segment(
+                        multiplier*formula.multipliers[j],
+                        formula.variables[j],
+                        i + j,
+                        inplace=True
+                    )
 
-                    except ValueError:
-                        # if no more segmrnts with <variable> exist, add the 
-                        # merged segments to the formula
-                        if multiplier != 0:
-                            self.insert_segment(
-                                multiplier, variable, i, 
-                                inplace=True
-                                )
-                        break
-        else:
-            copy_of_self = self.copy()
-            copy_of_self.zip(inplace=True)
-            return copy_of_self
+            except ValueError:
+                # break if no more segments with <variable> exist
+                break
 
-    def modulo(self, n, inplace=False):
+    @misc.inplace(default=False)
+    def zip(self):
+        """Reduces the formula to the simplest form"""
+
+        for variable in set(self.variables):
+
+            # find the first segment with <variable> and put it aside
+            i = self.variables.index(variable)
+            multiplier = self.get_segment(i)[0]
+            self.remove_segment(i, inplace=True)
+
+            while True:
+                try:
+                    # if more segments with <variable> exist, merge them 
+                    # with the segment put aside
+                    j = self.variables.index(variable)
+                    multiplier += self.get_segment(j)[0]
+                    self.remove_segment(j, inplace=True)
+
+                except ValueError:
+                    # if no more segments with <variable> exist, add the 
+                    # merged segments to the formula
+                    if multiplier != 0:
+                        self.insert_segment(
+                            multiplier, variable, i, 
+                            inplace=True
+                            )
+                    break
+
+    @misc.inplace(default=False)
+    def modulo(self, n):
         
-        if inplace:
-            self.zip(inplace=True)
-            for i in range(self.length()):
-                self.multipliers[i] %= n
-            self.zip(inplace=True)
-        else:
-            copy_of_self = self.copy()
-            copy_of_self.modulo(n, inplace=True)
-            return copy_of_self
-
+        self.zip(inplace=True)
+        for i in range(self.length()):
+            self.multipliers[i] %= n
+        self.zip(inplace=True)
+    
     #-------------------------------------------------------------------------
 
 
@@ -343,12 +325,15 @@ class LinearFormula():
 
     def evaluate(self, values_dict):
         result = 0
+
+        # no variable is represented by a '' string
         values_dict[''] = 1
         try:
             for i in range(self.length()):
                 result += self.multipliers[i]*values_dict[self.variables[i]]
         except KeyError:
             raise ValueError("Not all variables are provided")
+
         return result
 
     #-------------------------------------------------------------------------
