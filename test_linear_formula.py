@@ -64,7 +64,7 @@ class TestLinearFormula(unittest.TestCase):
             self.assertEqual(formula.multipliers, test_data[i][0])
             self.assertEqual(formula.variables, test_data[i][1])
         
-    def test_inspace(self):
+    def test_inplace(self):
         #formula = LinearFormula('a + 3b - 4c + 3a')
         #control_formula = LinearFormula('a + 3b - 4c + 3a')
 
