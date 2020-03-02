@@ -16,7 +16,11 @@ class LinearFormula():
 
         if len(args) == 1:
             arg = args[0]
-            if type(arg) == str:
+            if type(arg) == type(self):
+                self.multipliers = arg.multipliers.copy()
+                self.variables = arg.variables.copy()
+            
+            elif type(arg) == str:
                 self.read_from_string(arg)
 
             elif type(arg) == dict:
@@ -28,7 +32,10 @@ class LinearFormula():
                     self.multipliers.append(int(arg))
                     self.variables.append('')
                 except ValueError:
-                    raise ValueError('invalid argument')
+                    raise ValueError(f'invalid argument: {arg}')
+                except TypeError:
+                    raise TypeError(f'invalid argument: {arg}')
+                
 
 
         elif len(args) == 2 and type(args[0]) == type(args[1]) == list:
@@ -38,6 +45,12 @@ class LinearFormula():
             else:
                 self.multipliers = args[0].copy()
                 self.variables = args[1].copy()
+        
+        elif len(args) == 2:
+            raise TypeError('arguments havve to be lists')
+
+        else:
+            raise TypeError('the constructor takes at most 2 arguments')
 
     #-------------------------------------------------------------------------
 
@@ -171,7 +184,7 @@ class LinearFormula():
     #-------------------------------------------------------------------------
 
 
-    #-OPERATOR-OVERLOADS------------------------------------------------------
+    #-MAGIC-FUNCTION-OVERLOADS------------------------------------------------
 
     def __str__(self):
 
@@ -216,6 +229,101 @@ class LinearFormula():
             and self.variables == other.variables
         )
 
+    def __neg__(self):
+        result = self.copy()
+
+        for i in range(result.length()):
+            result.multipliers[i] *= -1
+        
+        return result
+    
+    @misc.convert_to_type('owners type', operator=True)
+    def __iadd__(self, other):
+        for i in range(other.length()):
+            multiplier = other.multipliers[i]
+            variable = other.variables[i]
+            self.add_segment(multiplier, variable, inplace=True)
+        
+        return self
+    
+    @misc.convert_to_type('owners type', operator=True)
+    def __isub__(self, other):
+        self += -other
+        return self
+    
+    @misc.convert_to_type(int, operator=True)
+    def __imul__(self, other):
+        for i in range(self.length()):
+            self.multipliers[i] *= other
+        
+        return self
+
+    @misc.convert_to_type(int, operator=True)    
+    def __itruediv__(self, other):
+        for i in range(self.length()):
+            self.multipliers[i] /= other
+        
+        return self
+    
+    @misc.convert_to_type(int, operator=True)
+    def __ifloordiv__(self, other):        
+        self.zip()
+        for i in range(self.length()):
+            self.multipliers[i] //= other
+        
+        return self
+
+    @misc.convert_to_type(int, operator=True)        
+    def __imod__(self, other):
+        self.modulo(other, inplace=True)
+        return self
+    
+    @misc.assignment_to_binary('+=')
+    def __add__(self, other):
+        pass
+    
+    @misc.assignment_to_binary('-=')
+    def __sub__(self, other):
+        pass
+    
+    @misc.assignment_to_binary('*=')
+    def __mul__(self, other):
+        pass
+    
+    @misc.assignment_to_binary('/=')
+    def __truediv__(self, other):
+        pass
+    
+    @misc.assignment_to_binary('//=')
+    def __floordiv__(self, other):
+        pass
+    
+    @misc.assignment_to_binary('%=')
+    def __mod__(self, other):
+        pass
+
+    def __rmul__(self, other):
+        return self * other
+    
+    def __len__(self):
+        return len(self.multipliers)
+    
+    def __getitem__(self, key):
+        if type(key) == int:
+            return self.get_segment(key)
+        
+        elif type(key) == str:
+            copy_of_self = self.copy()
+            copy_of_self.zip()
+            for i in range(len(copy_of_self)):
+                if copy_of_self.variables[i] == key:
+                    return copy_of_self.multipliers[i]
+        
+            raise KeyError(key)
+
+        else:
+            raise TypeError(f'invalid key type: {type(key)}')
+
     #-------------------------------------------------------------------------
 
 
@@ -243,6 +351,9 @@ class LinearFormula():
         #             <variable> == 'a', 
         #             <formula> "==" 'x + 2' 
         # then the result should be 'x + 2 + b'
+
+        if type(formula) == str:
+            formula = LinearFormula(formula)
 
         while True:
             try:
@@ -305,16 +416,16 @@ class LinearFormula():
     #-------------------------------------------------------------------------
 
 
-    #-RETURN-STUFF------------------------------------------------------------
+    #-OTHER-------------------------------------------------------------------
 
     def length(self):
-        return len(self.multipliers)
+        return len(self)
 
     def print(self):
         print(self.__str__())
 
     def copy(self):
-        copy_of_self = LinearFormula(self.__str__())
+        copy_of_self = LinearFormula(self.multipliers, self.variables)
         return copy_of_self
 
     def get_segment(self, index):
@@ -323,14 +434,14 @@ class LinearFormula():
 
         return (multiplier, variable)
 
-    def evaluate(self, values_dict):
+    def evaluate(self, **kwargs):
         result = 0
 
         # no variable is represented by a '' string
-        values_dict[''] = 1
+        kwargs[''] = 1
         try:
             for i in range(self.length()):
-                result += self.multipliers[i]*values_dict[self.variables[i]]
+                result += self.multipliers[i]*kwargs[self.variables[i]]
         except KeyError:
             raise ValueError("Not all variables are provided")
 
@@ -345,9 +456,11 @@ class LinearFormula():
 
 if __name__ == '__main__':
 
-    x = LinearFormula('a - 4')
 
-    print(x.multipliers)
+
+    formula = LinearFormula('a + 3b')
+
+    print(formula.__truediv__('c + 2d'))
 
 
 
