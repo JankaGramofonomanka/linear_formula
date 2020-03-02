@@ -309,20 +309,28 @@ class LinearFormula():
         return len(self.multipliers)
     
     def __getitem__(self, key):
-        if type(key) == int:
-            return self.get_segment(key)
         
-        elif type(key) == str:
+        if type(key) == str:
             copy_of_self = self.copy()
-            copy_of_self.zip()
+            copy_of_self.zip(inplace=True)
             for i in range(len(copy_of_self)):
                 if copy_of_self.variables[i] == key:
                     return copy_of_self.multipliers[i]
         
-            raise KeyError(key)
-
+            raise KeyError(f'{key}')
+        
         else:
-            raise TypeError(f'invalid key type: {type(key)}')
+            try:
+                int(key)
+            except ValueError:
+                raise KeyError(f'{key}')
+            except TypeError:
+                raise KeyError(f'invalid key type: {type(key)}')
+            
+            if int(key) == key:
+                return self.get_segment(key)
+            else:
+                raise KeyError(f'{key}')
 
     #-------------------------------------------------------------------------
 
