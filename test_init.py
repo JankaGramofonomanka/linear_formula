@@ -69,15 +69,19 @@ class TestInit(unittest.TestCase):
     def test_init_wrong(self):
 
         test_data = [
-            ([1, 3, -4],        ['a', 'b', 'c'],    3   ),
-            ('a + 3b - 4c',     7                       ),
-            ('a + 3b - 4c',     ['a', 'b', 'c']         ),
-            (7,                 7                       ),
-            ([-1, 4, 3, -4],    'a + b + c'             ),
+            (([1, 3, -4],       ['a', 'b', 'c'],    3   ),  TypeError   ),
+            (('a + 3b - 4c',    7                       ),  TypeError   ),
+            (('a + 3b - 4c',    ['a', 'b', 'c']         ),  TypeError   ),
+            ((7,                7                       ),  TypeError   ),
+            (([-1, 4, 3, -4],   'a + b + c'             ),  TypeError   ),
+            (([1, 3, -4],       ['a', 'b']              ),  ValueError  ),
+            (([1, 3],           ['a', 'b', 'c']         ),  ValueError  ),
         ]
 
-        for args in test_data:
-            self.assertRaises(TypeError, LinearFormula, *args)
+        for info in test_data:
+            args = info[0]
+            error = info[1]
+            self.assertRaises(error, LinearFormula, *args)
     
     #-------------------------------------------------------------------------
 

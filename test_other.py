@@ -47,11 +47,14 @@ class TestOther(unittest.TestCase):
             self.assertEqual(segment, info[2])
 
     def test_evaluate(self):
+
         test_data = [
             #formula            values                      expected result
             ('1',               {'a': 5},                   1   ),
+            ('1',               {},                         1   ),
             ('a',               {'a': 5},                   5   ),
             ('a + b + c',       {'a': 1, 'b': 1, 'c': 1},   3   ),
+            ('a + b',           {'a': 1, 'b': 1, 'c': 1},   2   ),
             ('a + 3b - 4c',     {'a': 1, 'b': 1, 'c': 1},   0   ),
             ('a + 3b - 4c',     {'a': 2, 'b': 2, 'c': 3},   -4  ),
         ]
@@ -60,6 +63,19 @@ class TestOther(unittest.TestCase):
             formula = LinearFormula(info[0])
             value = formula.evaluate(**info[1])
             self.assertEqual(value, info[2])
+
+        #errors    
+        test_data = [
+            #formula            values                      expected result
+            ('a',               {},                         TypeError   ),
+            ('a + b + c',       {'a': 1, 'b': 1},           TypeError   ),
+            ('a + 3b - 4c',     {'a': 1, 'c': 1},           TypeError   ),
+            ('a + 3b - 4c',     {'a': 2, 'b': 2, 'd': 3},   TypeError   ),
+        ]
+
+        for info in test_data:
+            formula = LinearFormula(info[0])
+            self.assertRaises(info[2], formula.evaluate, **info[1])
 
     #-------------------------------------------------------------------------
 

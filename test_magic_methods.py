@@ -418,7 +418,7 @@ class TestMagicMethods(unittest.TestCase):
             ('a + 3b - 4c',         3,      IndexError  ),
             ('a + 3b - 4c',         'd',    KeyError),
             ('a + 3b - 4c + 3a',    '2',    KeyError),
-            ('a + 7b - 0c - 4d',    (1, 2), KeyError),
+            ('a + 7b',              (1, 2), KeyError),
             ('aa + 7bb - 3cc',      'a',    KeyError),
         ]
 

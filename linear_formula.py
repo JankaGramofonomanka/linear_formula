@@ -47,7 +47,7 @@ class LinearFormula():
                 self.variables = args[1].copy()
         
         elif len(args) == 2:
-            raise TypeError('arguments havve to be lists')
+            raise TypeError('arguments have to be lists')
 
         else:
             raise TypeError('the constructor takes at most 2 arguments')
@@ -184,7 +184,7 @@ class LinearFormula():
     #-------------------------------------------------------------------------
 
 
-    #-MAGIC-FUNCTION-OVERLOADS------------------------------------------------
+    #-MAGIC-METHOD-OVERLOADS--------------------------------------------------
 
     def __str__(self):
 
@@ -451,7 +451,7 @@ class LinearFormula():
             for i in range(self.length()):
                 result += self.multipliers[i]*kwargs[self.variables[i]]
         except KeyError:
-            raise ValueError("Not all variables are provided")
+            raise TypeError("Not all values are provided")
 
         return result
 
