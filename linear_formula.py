@@ -457,19 +457,8 @@ class LinearFormula():
 
     #-------------------------------------------------------------------------
 
-
-
-
-
-
 if __name__ == '__main__':
-
-
 
     formula = LinearFormula('a + 3b')
 
-    print(formula.__truediv__('c + 2d'))
-
-
-
-
+    print(formula)

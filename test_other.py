@@ -6,6 +6,7 @@ class TestOther(unittest.TestCase):
 
     #-TEST-OTHER--------------------------------------------------------------
     
+    #-------------------------------------------------------------------------
     def test_length(self):
 
         test_data = [
@@ -26,12 +27,14 @@ class TestOther(unittest.TestCase):
             formula = LinearFormula(info[0])
             self.assertEqual(formula.length(), info[1])
     
+    #-------------------------------------------------------------------------
     def test_copy(self):
         formula = LinearFormula('a + b + 4c')
         copy_of_formula = formula.copy()
         copy_of_formula.add_segment(3, 'd', inplace=True)
         self.assertNotEqual(formula, copy_of_formula)
 
+    #-------------------------------------------------------------------------
     def test_get_segment(self):
 
         test_data = [
@@ -46,6 +49,7 @@ class TestOther(unittest.TestCase):
             segment = formula.get_segment(info[1])
             self.assertEqual(segment, info[2])
 
+    #-------------------------------------------------------------------------
     def test_evaluate(self):
 
         test_data = [

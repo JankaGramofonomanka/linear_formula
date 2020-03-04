@@ -6,6 +6,7 @@ class TestMagicMethods(unittest.TestCase):
 
     #-TEST-MAGIC-METHODS------------------------------------------------------
     
+    #-------------------------------------------------------------------------
     def test_str(self):
 
         test_data = [
@@ -24,6 +25,7 @@ class TestMagicMethods(unittest.TestCase):
             formula = LinearFormula(info[0], info[1])
             self.assertEqual(str(formula), info[2])
     
+    #-------------------------------------------------------------------------
     def test_eq(self):
 
         test_data = [
@@ -57,6 +59,7 @@ class TestMagicMethods(unittest.TestCase):
             formula_2 = LinearFormula(*info[1])
             self.assertFalse(formula_1 == formula_2)
     
+    #-------------------------------------------------------------------------
     def test_neg(self):
 
         test_data = [
@@ -90,6 +93,7 @@ class TestMagicMethods(unittest.TestCase):
             formula_2 = LinearFormula(info[1])
             self.assertNotEqual(-formula_1, formula_2)
     
+    #-------------------------------------------------------------------------
     def test_add_sub(self):
 
         # correct results
@@ -213,6 +217,7 @@ class TestMagicMethods(unittest.TestCase):
             formula_1 = LinearFormula(info[0])
             self.assertRaises(TypeError, formula_1.__isub__, info[1])
     
+    #-------------------------------------------------------------------------
     def test_mul(self):
 
         # correct results
@@ -233,7 +238,7 @@ class TestMagicMethods(unittest.TestCase):
             expected = LinearFormula(info[2])
             # *
             self.assertEqual(formula * info[1], expected)
-            #self.assertEqual(info[1] * formula, expected)
+            self.assertEqual(info[1] * formula, expected)
             # *=
             formula *= info[1]
             self.assertEqual(formula, expected)
@@ -256,10 +261,11 @@ class TestMagicMethods(unittest.TestCase):
             error = info[2]
             # *
             self.assertRaises(error, formula.__mul__, info[1])
-            #self.assertRaises(error, info[1] * formula)
+            self.assertRaises(error, formula.__rmul__, info[1])
             # *=
             self.assertRaises(error, formula.__imul__, info[1])
     
+    #-------------------------------------------------------------------------
     def test_truediv(self):
 
         test_data = [
@@ -305,6 +311,7 @@ class TestMagicMethods(unittest.TestCase):
             # /=
             self.assertRaises(error, formula.__itruediv__, info[1])
     
+    #-------------------------------------------------------------------------
     def test_floordiv(self):
         
         test_data = [
@@ -351,6 +358,7 @@ class TestMagicMethods(unittest.TestCase):
             # //=
             self.assertRaises(error, formula.__itruediv__, info[1])
     
+    #-------------------------------------------------------------------------
     def test_mod(self):
 
         test_data = [
@@ -394,7 +402,8 @@ class TestMagicMethods(unittest.TestCase):
             self.assertRaises(error, formula.__truediv__, info[1])
             # %=
             self.assertRaises(error, formula.__itruediv__, info[1])
-        
+    
+    #-------------------------------------------------------------------------
     def test_getitem(self):
 
         test_data = [

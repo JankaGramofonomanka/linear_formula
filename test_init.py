@@ -6,6 +6,7 @@ class TestInit(unittest.TestCase):
 
     #-TEST-INITIALIZATION-----------------------------------------------------
 
+    #-------------------------------------------------------------------------
     def test_init_with_string(self):
 
         test_data = [
@@ -26,6 +27,7 @@ class TestInit(unittest.TestCase):
             self.assertEqual(formula.multipliers, info[1])
             self.assertEqual(formula.variables, info[2])
 
+    #-------------------------------------------------------------------------
     def test_init_with_dict(self):
 
         test_data = [
@@ -38,6 +40,7 @@ class TestInit(unittest.TestCase):
             self.assertEqual(formula.multipliers, list(init_data.values()))
             self.assertEqual(formula.variables, list(init_data.keys()))
 
+    #-------------------------------------------------------------------------
     def test_init_with_int(self):
 
         test_data = [3, '3', 0, 23, '23']
@@ -47,6 +50,7 @@ class TestInit(unittest.TestCase):
             self.assertEqual(formula.multipliers, [int(init_data)])
             self.assertEqual(formula.variables, [''])
 
+    #-------------------------------------------------------------------------
     def test_init_with_lists(self):
 
         test_data = [
@@ -66,6 +70,7 @@ class TestInit(unittest.TestCase):
             self.assertEqual(formula.multipliers, info[0])
             self.assertEqual(formula.variables, info[1])
     
+    #-------------------------------------------------------------------------
     def test_init_wrong(self):
 
         test_data = [

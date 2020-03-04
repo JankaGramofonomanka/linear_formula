@@ -5,7 +5,8 @@ from linear_formula import LinearFormula
 class TestModifiers(unittest.TestCase):
 
     #-TEST-MODIFIERS----------------------------------------------------------
-        
+    
+    #-------------------------------------------------------------------------
     def test_inplace(self):
         #formula = LinearFormula('a + 3b - 4c + 3a')
         #control_formula = LinearFormula('a + 3b - 4c + 3a')
@@ -30,6 +31,7 @@ class TestModifiers(unittest.TestCase):
             function(formula, *args, inplace=True)
             self.assertNotEqual(formula, control_formula)
 
+    #-------------------------------------------------------------------------
     def test_add_segment(self):
 
         test_data = [
@@ -46,6 +48,7 @@ class TestModifiers(unittest.TestCase):
             formula.add_segment(*info[1], inplace=True)
             self.assertEqual(str(formula), info[2])
 
+    #-------------------------------------------------------------------------
     def test_insert_segment(self):
 
         test_data = [
@@ -64,10 +67,10 @@ class TestModifiers(unittest.TestCase):
 
         for info in test_data:
             formula = LinearFormula(info[0])
-            string = str(formula)
             formula.insert_segment(*info[1], inplace=True)
             self.assertEqual(str(formula), info[2])
 
+    #-------------------------------------------------------------------------
     def test_remove_segment(self):
 
         test_data = [
@@ -82,6 +85,7 @@ class TestModifiers(unittest.TestCase):
             formula.remove_segment(info[1], inplace=True)
             self.assertEqual(str(formula), info[2])
 
+    #-------------------------------------------------------------------------
     def test_substitute(self):
 
         test_data = [
@@ -110,6 +114,7 @@ class TestModifiers(unittest.TestCase):
             formula_2 = formula.substitute(info[1], substitute)
             self.assertEqual(str(formula_2), info[3])
 
+    #-------------------------------------------------------------------------
     def test_zip(self):
 
         test_data = [
@@ -129,6 +134,7 @@ class TestModifiers(unittest.TestCase):
             formula.zip(inplace=True)
             self.assertEqual(str(formula), info[1])
     
+    #-------------------------------------------------------------------------
     def test_modulo(self):
 
         test_data = [
