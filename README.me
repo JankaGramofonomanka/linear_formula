@@ -64,6 +64,28 @@ a + 3b - 4c + 5d
 >>> formula_1
 a + 3b - 4c
 
+8. Operations on formulas:
+>>> formula_1 = LinearFormula('a + 3b')
+>>> formula_2 = LinearFormula('4c - d')
+
+>>> -formula_1
+-a - 3b
+
+>>> fornula_1 + formula_2
+a + 3b + 4c - d
+
+>>> formula_1 + formula_2
+a + 3b - 4c + d
+
+>>> formula_1 * 2
+2a + 6b
+
+>>> formula_1 % 2
+a + b
+
+>>> formula_1[0]
+(3, 'b')
+
 8. Other:
 >>> LinearFormula('a + 3b - 4c').length()
 3
