@@ -36,8 +36,6 @@ class LinearFormula():
                 except TypeError:
                     raise TypeError(f'invalid argument: {arg}')
 
-
-
         elif len(args) == 2 and type(args[0]) == type(args[1]) == list:
             if len(args[0]) != len(args[1]):
                 raise ValueError("""lists of multipliers and variables must 
@@ -65,12 +63,12 @@ class LinearFormula():
         
         # the algorithm in essence works like this:
         # 1. read operator
-        # 2. read multilpier
+        # 2. read multiplier
         # 3. read variable
         # 4. add segment
         # 5. go back to point 1. if the string hasn't ended
 
-        #set up temporary data
+        # set up temporary data
         self._setup_read_from_string()
 
         for char in string:
@@ -96,13 +94,15 @@ class LinearFormula():
         del self._phase
 
     def _process(self, char):
+        """Choses the processing algorithm based on which phase the main
+        algorithm is in"""
+
         if self._phase == 'operation':
             self._process_operation(char)
         elif self._phase == 'multiplier':
             self._process_multiplier(char)
         elif self._phase == 'variable':
             self._process_variable(char)
-
 
     # the 3 methods below:
     # <_process_operation>, <_process_multiplier>, <_process_variable> 
@@ -115,6 +115,8 @@ class LinearFormula():
     #     pass <char> to the next _process_whatever method
 
     def _process_operation(self, char):
+        """Processes <char> given that <char> is part of an operation
+        (+ or -)"""
             
         if char == ' ':
             # in the middle of a string a space does not tell us anything
@@ -140,6 +142,7 @@ class LinearFormula():
             self._process_multiplier(char)
 
     def _process_multiplier(self, char):
+        """Processes <char> given that <char> is part of a number"""
 
         if LinearFormula._type_of_char(char) == 'number':
             if self._current_multiplier is None:
@@ -161,6 +164,7 @@ class LinearFormula():
             self._process_variable(char)
 
     def _process_variable(self, char):
+        """Processes <char> given that <char> is part of a variable name"""
     
         if LinearFormula._type_of_char(char) == 'char':
             if self._current_variable is None:
@@ -183,6 +187,8 @@ class LinearFormula():
 
     @classmethod
     def _type_of_char(cls, char):
+        """Tells whether <char> is a number, space, operator or a regular
+        character"""
         try:
             int(char)
             return 'number'
@@ -224,10 +230,10 @@ class LinearFormula():
                     # if the multiplier is -1 and there is a variable, there 
                     # is no sense in writing the multiplier
 
-                    # the '-' was alredy written
+                    # the '-' was already written
                     text += str(-self.multipliers[i])
 
-            # dont't forget the variable
+            # don't forget the variable
             text += self.variables[i]
 
         # the string shouldn't be empty
@@ -322,6 +328,9 @@ class LinearFormula():
         return len(self.multipliers)
     
     def __getitem__(self, key):
+        """Returns the <key>-th segment of the formula if <key> is an integer,
+        if key is a variable name, returns the multiplier corresponding to
+        <key>"""
         
         if type(key) == str:
             copy_of_self = self.copy()
@@ -367,7 +376,7 @@ class LinearFormula():
 
     @misc.inplace(default=False)
     def substitute(self, variable, formula):
-        """substitutes <variable> for <formula>"""
+        """Substitutes <variable> for <formula>"""
         # for example if <self> "==" 'a + b', 
         #             <variable> == 'a', 
         #             <formula> "==" 'x + 2' 
@@ -428,6 +437,7 @@ class LinearFormula():
 
     @misc.inplace(default=False)
     def modulo(self, n):
+        """Reduces the formula to it's simplest modulo <n> equivalent"""
         
         self.zip(inplace=True)
         for i in range(self.length()):
@@ -440,22 +450,30 @@ class LinearFormula():
     #-OTHER-------------------------------------------------------------------
 
     def length(self):
+        """Returns how many segments the formula has"""
         return len(self)
 
     def print(self):
+        """Prints the formula"""
         print(self.__str__())
 
     def copy(self):
+        """Returns a copy of <self>"""
         copy_of_self = LinearFormula(self.multipliers, self.variables)
         return copy_of_self
 
     def get_segment(self, index):
+        """Returns a tuple representing <index>-th segment of the formula"""
+        # for example if formula <formula> is 'a + 3b - 4c', then
+        # <formula.get_segment(1)> will return (3, 'b')
+
         multiplier = self.multipliers[index]
         variable = self.variables[index]
 
         return (multiplier, variable)
 
     def evaluate(self, **kwargs):
+        """Returns the value of the formula, given the variable values"""
         result = 0
 
         # no variable is represented by a '' string
@@ -470,7 +488,7 @@ class LinearFormula():
 
     def get_variables(self, omit_zeros=False):
         """Returns variables used by the formula"""
-        
+
         if omit_zeros:
             return set(self.zip().variables) - {''}
         else:
