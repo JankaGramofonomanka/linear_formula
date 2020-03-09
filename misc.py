@@ -1,15 +1,3 @@
-def type_of_char(char):
-    try:
-        int(char)
-        return 'number'
-    except ValueError:
-        if char == ' ':
-            return 'space'
-        elif char in {'+', '-'}:
-            return 'operator'
-        else:
-            return 'char'
-
 def inplace(**kwargs):
     try:
         kwargs['default']

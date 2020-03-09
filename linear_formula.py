@@ -122,7 +122,7 @@ class LinearFormula():
             # after a variable name
             pass
 
-        elif misc.type_of_char(char) == 'operator':
+        elif LinearFormula._type_of_char(char) == 'operator':
             if char == '+':
                 self._current_operation = '+'
             elif char == '-':
@@ -141,7 +141,7 @@ class LinearFormula():
 
     def _process_multiplier(self, char):
 
-        if misc.type_of_char(char) == 'number':
+        if LinearFormula._type_of_char(char) == 'number':
             if self._current_multiplier is None:
                 self._current_multiplier = int(char)
             else:
@@ -162,7 +162,7 @@ class LinearFormula():
 
     def _process_variable(self, char):
     
-        if misc.type_of_char(char) == 'char':
+        if LinearFormula._type_of_char(char) == 'char':
             if self._current_variable is None:
                 self._current_variable = char
             else:
@@ -180,6 +180,19 @@ class LinearFormula():
             # reset temporary data and go to the next phase
             self._setup_read_from_string()
             self._process_operation(char)
+
+    @classmethod
+    def _type_of_char(cls, char):
+        try:
+            int(char)
+            return 'number'
+        except ValueError:
+            if char == ' ':
+                return 'space'
+            elif char in {'+', '-'}:
+                return 'operator'
+            else:
+                return 'char'
 
     #-------------------------------------------------------------------------
 
