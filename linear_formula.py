@@ -19,7 +19,7 @@ class LinearFormula():
             if type(arg) == type(self):
                 self.multipliers = arg.multipliers.copy()
                 self.variables = arg.variables.copy()
-            
+
             elif type(arg) == str:
                 self.read_from_string(arg)
 
@@ -35,7 +35,7 @@ class LinearFormula():
                     raise ValueError(f'invalid argument: {arg}')
                 except TypeError:
                     raise TypeError(f'invalid argument: {arg}')
-                
+
 
 
         elif len(args) == 2 and type(args[0]) == type(args[1]) == list:
@@ -467,6 +467,14 @@ class LinearFormula():
             raise TypeError("Not all values are provided")
 
         return result
+
+    def get_variables(self, omit_zeros=False):
+        """Returns variables used by the formula"""
+        
+        if omit_zeros:
+            return set(self.zip().variables) - {''}
+        else:
+            return set(self.variables) - {''}
 
     #-------------------------------------------------------------------------
 
