@@ -15,7 +15,7 @@ class TestModifiers(unittest.TestCase):
             (LinearFormula.add_segment,     [3, 'f']                        ),
             (LinearFormula.insert_segment,  [3, 'f', 2]                     ),
             (LinearFormula.remove_segment,  [3]                             ),
-            (LinearFormula.substitute,      ['b', LinearFormula('x + 3')]   ),
+            (LinearFormula.substitute,      {'b': LinearFormula('x + 3')}   ),
             (LinearFormula.zip,             []                              ),
             (LinearFormula.modulo,          [2]                             ),
         ]
@@ -24,11 +24,17 @@ class TestModifiers(unittest.TestCase):
             formula = LinearFormula('a + 3b - 4c + 3a')
             control_formula = LinearFormula('a + 3b - 4c + 3a')
             self.assertEqual(formula, control_formula)
-            
-            function(formula, *args)
+
+            if type(args) == dict:
+                function(formula, **args)
+            else:
+                function(formula, *args)
             self.assertEqual(formula, control_formula)
 
-            function(formula, *args, inplace=True)
+            if type(args) == dict:
+                function(formula, **args, inplace=True)
+            else:
+                function(formula, *args, inplace=True)
             self.assertNotEqual(formula, control_formula)
 
     #-------------------------------------------------------------------------
@@ -89,30 +95,39 @@ class TestModifiers(unittest.TestCase):
     def test_substitute(self):
 
         test_data = [
-            #initial formula             substitute formula
-            #               variable to           expected result
-            #                substitute
-            ('a + 3b - 4c',         'a', 'x + 2', 'x + 2 + 3b - 4c'         ),
-            ('a + b - c',           'a', '2',     '2 + b - c'               ),
-            ('1 + 2 - 3',           'a', 'x + 2', '1 + 2 - 3'               ),
-            ('a + 3b - 4c + 3a',    'a', 'x + 2', 'x + 2 + 3b - 4c + 3x + 6'),
-            ('a + 7b - 4d',         'b', 'x + 2', 'a + 7x + 14 - 4d'        ),
-            ('-a + 4c',             'c', 'x + 2', '-a + 4x + 8'             ),
-            ('',                    'a', 'x + 2', '0'                       ),
-            ('a',                   'a', 'x + 2', 'x + 2'                   ),
-            ('6a + 3b',             'c', 'x + 2', '6a + 3b'                 ),
-            ('a + 3b - 4c',         'a', 'aaa',   'aaa + 3b - 4c'           ),
+            #initial formula            substitute formula
+            #                   variable to         expected result
+            #                   substitute
+            ('a + 3b - 4c',     {'a':   'x + 2'},   'x + 2 + 3b - 4c'       ),
+            ('a + b - c',       {'a':   '2'},       '2 + b - c'             ),
+            ('1 + 2 - 3',       {'a':   'x + 2'},   '1 + 2 - 3'             ),
+            ('a + 3b + 3a',     {'a':   'x + 2'},   'x + 2 + 3b + 3x + 6'   ),
+            ('a + 7b - 4d',     {'b':   'x + 2'},   'a + 7x + 14 - 4d'      ),
+            ('-a + 4c',         {'c':   'x + 2'},   '-a + 4x + 8'           ),
+            ('',                {'a':   'x + 2'},   '0'                     ),
+            ('a',               {'a':   'x + 2'},   'x + 2'                 ),
+            ('6a + 3b',         {'c':   'x + 2'},   '6a + 3b'               ),
+            ('a + 3b - 4c',     {'a':   'aaa'},     'aaa + 3b - 4c'         ),
+
+            #substitute multiple variables at once
+            #initial formula                                result
+            #               {variable: substitute}
+            ('a + 3b - 4c', {'a': 'x', 'b': 'y', 'c': 'z'}, 'x + 3y - 4z'   ),
+            ('a + 3b',      {'a': 'x + 2', 'b': 'y - 1'},   'x + 2 + 3y - 3'),
+            ('a',           {'a': 'x + 2', 'b': 'y - 1'},   'x + 2'         ),
         ]
 
         for info in test_data:
             formula = LinearFormula(info[0])
-            
-            formula_2 = formula.substitute(info[1], info[2])
-            self.assertEqual(str(formula_2), info[3])
 
-            substitute = LinearFormula(info[2])
-            formula_2 = formula.substitute(info[1], substitute)
-            self.assertEqual(str(formula_2), info[3])
+            init_data = info[1]
+            formula_2 = formula.substitute(**init_data)
+            self.assertEqual(str(formula_2), info[2])
+
+            for key in init_data.keys():
+                init_data[key] = LinearFormula(init_data[key])
+            formula_2 = formula.substitute(**init_data)
+            self.assertEqual(str(formula_2), info[2])
 
     #-------------------------------------------------------------------------
     def test_zip(self):

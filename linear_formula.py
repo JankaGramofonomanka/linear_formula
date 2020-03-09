@@ -375,7 +375,12 @@ class LinearFormula():
         del self.variables[index]
 
     @misc.inplace(default=False)
-    def substitute(self, variable, formula):
+    def substitute(self, **kwargs):
+        """Substitutes given variables for given formulas"""
+        for variable, formula in kwargs.items():
+            self._substitute_one_variable(variable, formula)
+
+    def _substitute_one_variable(self, variable, formula):
         """Substitutes <variable> for <formula>"""
         # for example if <self> "==" 'a + b', 
         #             <variable> == 'a', 
@@ -392,7 +397,7 @@ class LinearFormula():
                 multiplier = self.get_segment(i)[0]
                 self.remove_segment(i, inplace=True)
 
-                # insert each segment from <formula> multiplied by 
+                # insert each segment from <formula> multiplied by
                 # <multiplier> into <self>
                 for j in range(formula.length()):
                     self.insert_segment(
@@ -499,5 +504,6 @@ class LinearFormula():
 if __name__ == '__main__':
 
     formula = LinearFormula('a + 3b')
+    formula.substitute(a='3x', inplace=True)
 
     print(formula)

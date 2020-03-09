@@ -5,12 +5,12 @@ def inplace(**kwargs):
         raise ValueError('default argument not specified')
     
     def decorator(func):
-        def real_func(self, *args, inplace=kwargs['default']):
+        def real_func(self, *args, inplace=kwargs['default'], **kwargs):
             if inplace == True:
-                func(self, *args)
+                func(self, *args, **kwargs)
             elif inplace == False:
                 copy_of_self = self.copy()
-                func(copy_of_self, *args)
+                func(copy_of_self, *args, **kwargs)
                 return copy_of_self
             else:
                 raise ValueError(f"invalid 'inplace' argument: {inplace}")

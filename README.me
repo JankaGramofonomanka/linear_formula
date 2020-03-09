@@ -28,8 +28,14 @@ a + 3b - 4c
 3. Substitute variables:
 >>> formula_1 = LinearFormula('a + 3b - 4c')
 >>> formula_2 = LinearFormula('x + 2')
->>> formula_1.substitute('a', formula_2)
+>>> formula_1.substitute(a=formula_2)
 x + 2 + 3b - 4c
+
+>>> formula_1.substitute(a='y - 2')
+y - 2 + 3b - 4c
+
+>>> formula_1.substitute(a='x', b='y', c='2a')
+x + 3y - 8a
 
 4. Simplify:
 >>> formula_1 = LinearFormula('a + 3b - 4c + 3a - b')
