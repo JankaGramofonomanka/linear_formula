@@ -108,6 +108,8 @@ class TestModifiers(unittest.TestCase):
             ('a',               {'a':   'x + 2'},   'x + 2'                 ),
             ('6a + 3b',         {'c':   'x + 2'},   '6a + 3b'               ),
             ('a + 3b - 4c',     {'a':   'aaa'},     'aaa + 3b - 4c'         ),
+            ('a + 3b - 4c',     {'a':   'a + 2'},   'a + 2 + 3b - 4c'       ),
+            ('a + 3b - 4c',     {'a':   'a'},       'a + 3b - 4c'           ),
 
             #substitute multiple variables at once
             #initial formula                                result
@@ -115,6 +117,8 @@ class TestModifiers(unittest.TestCase):
             ('a + 3b - 4c', {'a': 'x', 'b': 'y', 'c': 'z'}, 'x + 3y - 4z'   ),
             ('a + 3b',      {'a': 'x + 2', 'b': 'y - 1'},   'x + 2 + 3y - 3'),
             ('a',           {'a': 'x + 2', 'b': 'y - 1'},   'x + 2'         ),
+            ('a + 2b',      {'a': 'b', 'b': 'a'},           'b + 2a'        ),
+            ('a + 2b',      {'a': 'b + y', 'b': 'a'},       'b + y + 2a'    ),
         ]
 
         for info in test_data:

@@ -377,9 +377,27 @@ class LinearFormula():
     @misc.inplace(default=False)
     def substitute(self, **kwargs):
         """Substitutes given variables for given formulas"""
-        for variable, formula in kwargs.items():
-            self._substitute_one_variable(variable, formula)
+        # <kwargs> should look like this {variable: formula}
 
+        # assign integers to variables
+        variable_ints = {}
+        for i, variable in enumerate(kwargs.keys()):
+            variable_ints[variable] = i
+
+        # replace variables with the integers assigned to them
+        for j in range(len(self)):
+            variable = self.variables[j]
+            if variable in variable_ints.keys():
+                self.variables[j] = variable_ints[variable]
+
+        # the steps above are included to avoid issues when one of the
+        # formulas uses one of the variables we want to substitute
+
+        # substitute the integers with desired formulas
+        for variable, formula in kwargs.items():
+            self._substitute_one_variable(variable_ints[variable], formula)
+
+    @misc.convert_to_type('owners type', arg_index=1)
     def _substitute_one_variable(self, variable, formula):
         """Substitutes <variable> for <formula>"""
         # for example if <self> "==" 'a + b', 
@@ -387,8 +405,7 @@ class LinearFormula():
         #             <formula> "==" 'x + 2' 
         # then the result should be 'x + 2 + b'
 
-        if type(formula) == str:
-            formula = LinearFormula(formula)
+        # <formula> is assumed to not use <variable>
 
         while True:
             try:
